@@ -2,7 +2,6 @@ package org.boosty.impl;
 
 import org.boosty.entity.Subscriber;
 import org.boosty.entity.TokenPair;
-import org.boosty.entity.exceptions.ThreeUIException;
 import org.boosty.entity.exceptions.UnsuccessfulHttpException;
 import org.jetbrains.annotations.Contract;
 
@@ -15,22 +14,28 @@ import java.util.Objects;
  */
 public interface BoostyAPI {
 
-    List<Subscriber> getSubscribers(String blogName, int limit) throws IOException, InterruptedException, ThreeUIException, UnsuccessfulHttpException;
+    List<Subscriber> getSubscribers(String blogName, int limit) throws IOException, UnsuccessfulHttpException;
 
-    TokenPair refreshTokens() throws IOException, InterruptedException;
+    TokenPair refreshTokens() throws IOException, UnsuccessfulHttpException;
 
     String getAccessToken();
 
     String getRefreshToken();
+
+    long getAccessTokenExpiresAt();
+
+    String getUserAgent();
 
     class Builder {
 
         private String accessToken;
         private String refreshToken;
         private String deviceId;
+        private String userAgent;
+        private long expiresAt;
 
         public Builder setAccessToken(String accessToken) {
-            this.accessToken = Objects.requireNonNull(accessToken);
+            this.accessToken = accessToken;
             return this;
         }
 
@@ -46,6 +51,21 @@ public interface BoostyAPI {
             return this;
         }
 
+        public Builder setUserAgent(String userAgent) {
+            this.userAgent = userAgent;
+            return this;
+        }
+
+        public Builder setExpiresAt(long expiresAt) {
+            this.expiresAt = expiresAt;
+            return this;
+        }
+
+        public Builder setAccessTokenExpiresAt(long expiresAt) {
+            this.expiresAt = expiresAt;
+            return this;
+        }
+
         public BoostyAPI build() {
             if (refreshToken == null || refreshToken.isBlank()) {
                 throw new IllegalArgumentException("refreshToken cannot be null or blank!");
@@ -58,7 +78,9 @@ public interface BoostyAPI {
             return new BoostyAPIImpl(
                     accessToken,
                     refreshToken,
-                    deviceId
+                    deviceId,
+                    userAgent,
+                    expiresAt
             );
         }
     }
