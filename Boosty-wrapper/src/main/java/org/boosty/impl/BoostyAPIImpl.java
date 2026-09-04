@@ -3,6 +3,13 @@ package org.boosty.impl;
 import okhttp3.*;
 import org.boosty.entity.Subscriber;
 import org.boosty.entity.TokenPair;
+import org.boosty.entity.api.request.APIRequest;
+import org.boosty.entity.api.request.SubscriberRequest;
+import org.boosty.entity.api.response.ApiResponse;
+import org.boosty.entity.api.response.SubscriberResponse;
+import org.boosty.entity.exceptions.ThreeUIException;
+import org.boosty.entity.exceptions.UnsuccessfulHttpException;
+import org.boosty.utils.JsonUtil;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +19,6 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 
 public class BoostyAPIImpl implements BoostyAPI {
@@ -20,6 +26,7 @@ public class BoostyAPIImpl implements BoostyAPI {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoostyAPIImpl.class);
     private static final String API_URL = "https://api.boosty.to";
     private static final OkHttpClient CLIENT = new OkHttpClient();
+    private static final MediaType MEDIA_TYPE_JSON = MediaType.get("application/json");
     private static final MediaType MEDIA_TYPE_FORM = MediaType.get("application/x-www-form-urlencoded");
 
     private final ObjectMapper objectMapper;
@@ -36,64 +43,41 @@ public class BoostyAPIImpl implements BoostyAPI {
     }
 
     @Override
-    public List<Subscriber> getSubscribers(String blogName, int limit) throws IOException {
-        ensureAccessToken();
+    public List<Subscriber> getSubscribers(String blogName, int limit) throws IOException, InterruptedException, ThreeUIException, UnsuccessfulHttpException {
+        return parseResponse(SubscriberResponse.class, new SubscriberRequest(API_URL, blogName, limit)).getData();
+    }
 
-        String url = API_URL
-                + "/v1/blog/"
-                + URLEncoder.encode(blogName, StandardCharsets.UTF_8)
-                + "/subscribers"
-                + "?sort_by=on_time"
-                + "&limit=" + limit
-                + "&order=gt";
+    private <T extends ApiResponse> T parseResponse(Class<T> tClass, @NotNull APIRequest apiRequest) throws IOException, UnsuccessfulHttpException {
+        String url = apiRequest.getUrl();
+        APIRequest.RequestMethod method = apiRequest.getRequestMethod();
 
-        Response response = sendGet(url);
+        String payload = apiRequest.getData() != null ? apiRequest.getData().toJson() : "{}";
+        LOGGER.debug("API request start. method={} url={} payload={}", method, url, payload);
 
-        if (response.code() == 401) {
-            response.close();
+        Request.Builder requestBuilder = new Request.Builder().url(url).addHeader("Accept", "application/json").addHeader("Authorization", "Bearer " + accessToken);
 
-            refreshTokens();
-
-            response = sendGet(url);
+        if (method == APIRequest.RequestMethod.GET) {
+            requestBuilder.get();
+        } else if (method == APIRequest.RequestMethod.POST) {
+            requestBuilder.post(RequestBody.create(payload, MEDIA_TYPE_JSON));
         }
 
-        try (Response finalResponse = response) {
-            if (!finalResponse.isSuccessful()) {
-                String responseBody = finalResponse.body().string();
-                throw new IOException(
-                        "Boosty API returned "
-                                + finalResponse.code()
-                                + ": "
-                                + responseBody
-                );
+        Request request = requestBuilder.build();
+        long start = System.currentTimeMillis();
+
+        try (Response response = CLIENT.newCall(request).execute()) {
+            long duration = System.currentTimeMillis() - start;
+            String responseBody = response.body().string();
+
+            if (!response.isSuccessful()) {
+                LOGGER.error("API request failed. method={} url={} status={} message={} durationMs={} body={}", method, url, response.code(), response.message(), duration, responseBody);
+                throw new UnsuccessfulHttpException(response.code(), response.message());
             }
 
-            String responseBody = finalResponse.body().string();
+            LOGGER.debug("API request success. method={} url={} status={} durationMs={}", method, url, response.code(), duration);
+            LOGGER.debug("API response body. url={} body={}", url, responseBody);
 
-            JsonNode root = objectMapper.readTree(responseBody);
-            JsonNode data = root.path("data");
-
-            List<Subscriber> subscribers = new ArrayList<>();
-
-            for (JsonNode user : data) {
-                JsonNode level = user.path("level");
-
-                subscribers.add(new Subscriber(
-                        user.path("id").asLong(),
-                        user.path("name").asString(),
-                        user.path("avatarUrl").asString(null),
-                        user.path("onTime").asLong(),
-                        user.path("status").asString(),
-                        user.path("payments").asInt(),
-                        user.path("price").asInt(),
-                        user.path("subscribed").asBoolean(),
-                        level.path("id").asLong(),
-                        level.path("name").asString(null),
-                        level.path("price").asInt()
-                ));
-            }
-
-            return subscribers;
+            return JsonUtil.fromJson(responseBody, tClass);
         }
     }
 

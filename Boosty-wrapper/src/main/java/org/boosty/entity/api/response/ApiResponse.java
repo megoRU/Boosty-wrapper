@@ -7,6 +7,4 @@ import org.boosty.impl.APIObject;
  */
 public interface ApiResponse extends APIObject {
 
-    boolean isSuccess();
-    String getMessage();
 }

@@ -2,6 +2,8 @@ package org.boosty.impl;
 
 import org.boosty.entity.Subscriber;
 import org.boosty.entity.TokenPair;
+import org.boosty.entity.exceptions.ThreeUIException;
+import org.boosty.entity.exceptions.UnsuccessfulHttpException;
 import org.jetbrains.annotations.Contract;
 
 import java.io.IOException;
@@ -13,7 +15,7 @@ import java.util.Objects;
  */
 public interface BoostyAPI {
 
-    List<Subscriber> getSubscribers(String blogName, int limit) throws IOException, InterruptedException;
+    List<Subscriber> getSubscribers(String blogName, int limit) throws IOException, InterruptedException, ThreeUIException, UnsuccessfulHttpException;
 
     TokenPair refreshTokens() throws IOException, InterruptedException;
 
