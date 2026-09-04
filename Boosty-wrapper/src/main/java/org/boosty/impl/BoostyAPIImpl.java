@@ -1,10 +1,6 @@
 package org.boosty.impl;
 
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import okhttp3.*;
 import org.boosty.entity.Subscriber;
 import org.boosty.entity.TokenPair;
 import org.jetbrains.annotations.NotNull;
@@ -22,13 +18,9 @@ import java.util.List;
 public class BoostyAPIImpl implements BoostyAPI {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BoostyAPIImpl.class);
-
     private static final String API_URL = "https://api.boosty.to";
-
     private static final OkHttpClient CLIENT = new OkHttpClient();
-
-    private static final MediaType MEDIA_TYPE_FORM =
-            MediaType.get("application/x-www-form-urlencoded");
+    private static final MediaType MEDIA_TYPE_FORM = MediaType.get("application/x-www-form-urlencoded");
 
     private final ObjectMapper objectMapper;
     private final String deviceId;
@@ -36,11 +28,7 @@ public class BoostyAPIImpl implements BoostyAPI {
     private String accessToken;
     private String refreshToken;
 
-    protected BoostyAPIImpl(
-            String accessToken,
-            String refreshToken,
-            String deviceId
-    ) {
+    protected BoostyAPIImpl(String accessToken, String refreshToken, String deviceId) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.deviceId = deviceId;
@@ -48,11 +36,7 @@ public class BoostyAPIImpl implements BoostyAPI {
     }
 
     @Override
-    public List<Subscriber> getSubscribers(
-            String blogName,
-            int limit
-    ) throws IOException {
-
+    public List<Subscriber> getSubscribers(String blogName, int limit) throws IOException {
         ensureAccessToken();
 
         String url = API_URL
@@ -75,10 +59,7 @@ public class BoostyAPIImpl implements BoostyAPI {
 
         try (Response finalResponse = response) {
             if (!finalResponse.isSuccessful()) {
-                String responseBody = finalResponse.body() != null
-                        ? finalResponse.body().string()
-                        : "";
-
+                String responseBody = finalResponse.body().string();
                 throw new IOException(
                         "Boosty API returned "
                                 + finalResponse.code()
@@ -87,9 +68,7 @@ public class BoostyAPIImpl implements BoostyAPI {
                 );
             }
 
-            String responseBody = finalResponse.body() != null
-                    ? finalResponse.body().string()
-                    : "";
+            String responseBody = finalResponse.body().string();
 
             JsonNode root = objectMapper.readTree(responseBody);
             JsonNode data = root.path("data");
@@ -120,7 +99,6 @@ public class BoostyAPIImpl implements BoostyAPI {
 
     @Override
     public TokenPair refreshTokens() throws IOException {
-
         if (refreshToken == null || refreshToken.isBlank()) {
             throw new IOException("Refresh token is empty");
         }
@@ -148,12 +126,9 @@ public class BoostyAPIImpl implements BoostyAPI {
         long start = System.currentTimeMillis();
 
         try (Response response = CLIENT.newCall(request).execute()) {
-
             long duration = System.currentTimeMillis() - start;
 
-            String responseBody = response.body() != null
-                    ? response.body().string()
-                    : "";
+            String responseBody = response.body().string();
 
             if (!response.isSuccessful()) {
                 LOGGER.error(
@@ -163,30 +138,20 @@ public class BoostyAPIImpl implements BoostyAPI {
                         responseBody
                 );
 
-                throw new IOException(
-                        "Unable to refresh Boosty token: "
-                                + response.code()
-                                + ": "
-                                + responseBody
+                throw new IOException("Unable to refresh Boosty token: " + response.code() + ": " + responseBody
                 );
             }
 
             JsonNode json = objectMapper.readTree(responseBody);
 
-            String newAccessToken =
-                    json.path("access_token").asString(null);
+            String newAccessToken = json.path("access_token").asString(null);
 
-            String newRefreshToken =
-                    json.path("refresh_token").asString(null);
+            String newRefreshToken = json.path("refresh_token").asString(null);
 
-            long expiresIn =
-                    json.path("expires_in").asLong(0);
+            long expiresIn = json.path("expires_in").asLong(0);
 
             if (newAccessToken == null || newAccessToken.isBlank()) {
-                throw new IOException(
-                        "Boosty did not return access_token: "
-                                + responseBody
-                );
+                throw new IOException("Boosty did not return access_token: " + responseBody);
             }
 
             accessToken = newAccessToken;
@@ -199,16 +164,9 @@ public class BoostyAPIImpl implements BoostyAPI {
                 refreshToken = newRefreshToken;
             }
 
-            LOGGER.debug(
-                    "Boosty token refreshed. expiresIn={} durationMs={}",
-                    expiresIn,
-                    duration
-            );
+            LOGGER.debug("Boosty token refreshed. expiresIn={} durationMs={}", expiresIn, duration);
 
-            return new TokenPair(
-                    accessToken,
-                    refreshToken,
-                    expiresIn
+            return new TokenPair(accessToken, refreshToken, expiresIn
             );
         }
     }
@@ -221,7 +179,6 @@ public class BoostyAPIImpl implements BoostyAPI {
 
     @NotNull
     private Response sendGet(String url) throws IOException {
-
         Request request = new Request.Builder()
                 .url(url)
                 .get()
@@ -236,10 +193,7 @@ public class BoostyAPIImpl implements BoostyAPI {
     }
 
     private String encode(String value) {
-        return URLEncoder.encode(
-                value,
-                StandardCharsets.UTF_8
-        );
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 
     private String getUserAgent() {
