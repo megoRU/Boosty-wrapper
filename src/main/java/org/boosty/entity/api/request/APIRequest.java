@@ -32,4 +32,8 @@ public abstract class APIRequest {
         GET,
         POST
     }
+
+    public boolean isFormEncoded() {
+        return false;
+    }
 }

@@ -2,8 +2,11 @@ package org.boosty.impl;
 
 import org.boosty.entity.Subscriber;
 import org.boosty.entity.TokenPair;
+import org.boosty.entity.api.response.DialogResponse;
+import org.boosty.entity.api.response.MessageResponse;
 import org.boosty.entity.exceptions.UnsuccessfulHttpException;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,7 +19,11 @@ public interface BoostyAPI {
 
     List<Subscriber> getSubscribers(String blogName, int limit) throws IOException, UnsuccessfulHttpException;
 
+    MessageResponse sendMessage(@NotNull String message, int dialogId) throws IOException, UnsuccessfulHttpException;
+
     TokenPair refreshTokens() throws IOException, UnsuccessfulHttpException;
+
+    DialogResponse dialog() throws IOException, UnsuccessfulHttpException;
 
     String getAccessToken();
 

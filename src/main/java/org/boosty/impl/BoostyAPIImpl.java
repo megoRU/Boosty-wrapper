@@ -3,12 +3,8 @@ package org.boosty.impl;
 import okhttp3.*;
 import org.boosty.entity.Subscriber;
 import org.boosty.entity.TokenPair;
-import org.boosty.entity.api.request.APIRequest;
-import org.boosty.entity.api.request.RefreshTokenRequest;
-import org.boosty.entity.api.request.SubscriberRequest;
-import org.boosty.entity.api.response.ApiResponse;
-import org.boosty.entity.api.response.RefreshTokenResponse;
-import org.boosty.entity.api.response.SubscriberResponse;
+import org.boosty.entity.api.request.*;
+import org.boosty.entity.api.response.*;
 import org.boosty.entity.exceptions.UnsuccessfulHttpException;
 import org.boosty.utils.JsonUtil;
 import org.jetbrains.annotations.NotNull;
@@ -48,6 +44,16 @@ public class BoostyAPIImpl implements BoostyAPI {
         return parseResponse(SubscriberResponse.class, new SubscriberRequest(API_URL, blogName, limit)).getData();
     }
 
+    @Override
+    public DialogResponse dialog() throws IOException, UnsuccessfulHttpException {
+       return parseResponse(DialogResponse.class, new DialogRequest(API_URL));
+    }
+
+    @Override
+    public MessageResponse sendMessage(@NotNull String message, int dialogId) throws IOException, UnsuccessfulHttpException {
+        return parseResponse(MessageResponse.class, new MessageRequest(API_URL, dialogId, message));
+    }
+
     private <T extends ApiResponse> T parseResponse(Class<T> tClass, @NotNull APIRequest apiRequest) throws IOException, UnsuccessfulHttpException {
         String url = apiRequest.getUrl();
         APIRequest.RequestMethod method = apiRequest.getRequestMethod();
@@ -69,7 +75,13 @@ public class BoostyAPIImpl implements BoostyAPI {
         if (method == APIRequest.RequestMethod.GET) {
             requestBuilder.get();
         } else if (method == APIRequest.RequestMethod.POST) {
-            requestBuilder.post(RequestBody.create(payload, apiRequest.getMediaType()));
+            if (apiRequest.isFormEncoded()) {
+                requestBuilder.post(new FormBody.Builder()
+                        .add("data", payload.substring(payload.indexOf('['), payload.lastIndexOf(']') + 1))
+                        .build());
+            } else {
+                requestBuilder.post(RequestBody.create(payload, apiRequest.getMediaType()));
+            }
         }
 
         Request request = requestBuilder.build();
