@@ -1,4 +1,5 @@
 # Boosty API Wrapper for Java
+[![JitPack](https://jitpack.io/v/megoRU/Boosty-wrapper.svg)](https://jitpack.io/#megoRU/Boosty-wrapper)
 
 Легковесная Java-библиотека для работы с API [Boosty.to](https://boosty.to).
 
@@ -9,6 +10,25 @@
 * Поддержка ротации `refreshToken`.
 * Настройка `User-Agent`.
 * Без привязки к БД или файловой системе.
+
+## Установка (Maven)
+
+Добавьте репозиторий JitPack и зависимость:
+
+```xml
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+
+<dependency>
+    <groupId>com.github.megoRU</groupId>
+    <artifactId>Boosty-wrapper</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
 
 ## Инициализация
 
