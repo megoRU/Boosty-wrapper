@@ -7,7 +7,6 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-@Builder
 public class Subscriber {
 
     private long id;
@@ -51,8 +50,8 @@ public class Subscriber {
     @NoArgsConstructor
     @Getter
     @Setter
-    @Builder
     public static class Level {
+
         private long id;
         private String name;
         private int price;
