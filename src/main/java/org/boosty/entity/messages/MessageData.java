@@ -1,4 +1,4 @@
-package org.boosty.entity;
+package org.boosty.entity.messages;
 
 import lombok.Data;
 

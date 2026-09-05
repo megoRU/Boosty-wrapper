@@ -2,9 +2,9 @@ package org.boosty.entity.api.request;
 
 import org.jetbrains.annotations.NotNull;
 
-public class DialogRequest extends APIRequest {
+public class DialogsRequest extends APIRequest {
 
-    public DialogRequest(@NotNull String url) {
+    public DialogsRequest(@NotNull String url) {
         super(String.format("%s/v1/dialog/", url), RequestMethod.GET);
     }
 }

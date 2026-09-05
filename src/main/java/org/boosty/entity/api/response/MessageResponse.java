@@ -1,8 +1,8 @@
 package org.boosty.entity.api.response;
 
 import lombok.Data;
-import org.boosty.entity.Dialog;
-import org.boosty.entity.MessageData;
+import org.boosty.entity.dialog.Dialogs;
+import org.boosty.entity.messages.MessageData;
 
 import java.util.List;
 import java.util.Map;
@@ -12,7 +12,7 @@ public class MessageResponse implements ApiResponse {
 
     private boolean isPaid;
     private boolean payWall;
-    private Dialog.Attachments attachments;
+    private Dialogs.Attachments attachments;
     private long authorId;
     private long createdAt;
     private Map<String, Double> currencyPrices;

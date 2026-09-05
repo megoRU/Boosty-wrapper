@@ -1,6 +1,7 @@
 package org.boosty.impl;
 
 import okhttp3.*;
+import org.boosty.entity.dialog.Dialog;
 import org.boosty.entity.Subscriber;
 import org.boosty.entity.TokenPair;
 import org.boosty.entity.api.request.*;
@@ -45,13 +46,23 @@ public class BoostyAPIImpl implements BoostyAPI {
     }
 
     @Override
-    public DialogResponse dialog() throws IOException, UnsuccessfulHttpException {
-       return parseResponse(DialogResponse.class, new DialogRequest(API_URL));
+    public DialogsResponse dialog() throws IOException, UnsuccessfulHttpException {
+       return parseResponse(DialogsResponse.class, new DialogsRequest(API_URL));
     }
 
     @Override
     public MessageResponse sendMessage(@NotNull String message, int dialogId) throws IOException, UnsuccessfulHttpException {
         return parseResponse(MessageResponse.class, new MessageRequest(API_URL, dialogId, message));
+    }
+
+    @Override
+    public DialogWithUserResponse dialogWithUser(long userId) throws IOException, UnsuccessfulHttpException {
+        return parseResponse(DialogWithUserResponse.class, new DialogWithUserRequest(API_URL, userId));
+    }
+
+    @Override
+    public Dialog createDialog(long userId) throws IOException, UnsuccessfulHttpException {
+        return parseResponse(Dialog.class, new CreateDialogRequest(API_URL, userId));
     }
 
     private <T extends ApiResponse> T parseResponse(Class<T> tClass, @NotNull APIRequest apiRequest) throws IOException, UnsuccessfulHttpException {
@@ -75,10 +86,14 @@ public class BoostyAPIImpl implements BoostyAPI {
         if (method == APIRequest.RequestMethod.GET) {
             requestBuilder.get();
         } else if (method == APIRequest.RequestMethod.POST) {
-            if (apiRequest.isFormEncoded()) {
+            if (apiRequest.isFormEncodedText()) {
                 requestBuilder.post(new FormBody.Builder()
                         .add("data", payload.substring(payload.indexOf('['), payload.lastIndexOf(']') + 1))
                         .build());
+            } else if (apiRequest.isFormEncodedCreateDialog()) {
+                FormBody.Builder formBuilder = new FormBody.Builder();
+                apiRequest.getFormData().forEach(formBuilder::add);
+                requestBuilder.post(formBuilder.build());
             } else {
                 requestBuilder.post(RequestBody.create(payload, apiRequest.getMediaType()));
             }
@@ -93,7 +108,7 @@ public class BoostyAPIImpl implements BoostyAPI {
 
             if (!response.isSuccessful()) {
                 LOGGER.error("API request failed. method={} url={} status={} message={} durationMs={} body={}", method, url, response.code(), response.message(), duration, responseBody);
-                throw new UnsuccessfulHttpException(response.code(), response.message());
+                throw new UnsuccessfulHttpException(response.code(), responseBody);
             }
 
             LOGGER.debug("API request success. method={} url={} status={} durationMs={}", method, url, response.code(), duration);

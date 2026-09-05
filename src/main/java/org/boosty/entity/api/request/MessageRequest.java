@@ -14,7 +14,7 @@ public class MessageRequest extends APIRequest {
     }
 
     @Override
-    public boolean isFormEncoded() {
+    public boolean isFormEncodedText() {
         return true;
     }
 

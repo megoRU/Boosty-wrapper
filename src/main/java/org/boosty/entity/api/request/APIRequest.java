@@ -5,6 +5,8 @@ import okhttp3.MediaType;
 import org.boosty.impl.APIRequestData;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
+
 @Getter
 public abstract class APIRequest {
 
@@ -28,12 +30,20 @@ public abstract class APIRequest {
         return DEFAULT_MEDIA_TYPE;
     }
 
+    public Map<String, String> getFormData() {
+        return Map.of();
+    }
+
     public enum RequestMethod {
         GET,
         POST
     }
 
-    public boolean isFormEncoded() {
+    public boolean isFormEncodedText() {
+        return false;
+    }
+
+    public boolean isFormEncodedCreateDialog() {
         return false;
     }
 }

@@ -6,11 +6,11 @@ import lombok.Getter;
 public class UnsuccessfulHttpException extends Exception {
 
     private final int code;
-    private final String message;
+    private final String responseBody;
 
-    public UnsuccessfulHttpException(int code, String message) {
-        super("The server responded with code: " + code + ", message: " + message);
+    public UnsuccessfulHttpException(int code, String responseBody) {
+        super("The server responded with code: " + code + ", message: " + responseBody);
         this.code = code;
-        this.message = message;
+        this.responseBody = responseBody;
     }
 }

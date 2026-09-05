@@ -1,4 +1,4 @@
-package org.boosty.entity;
+package org.boosty.entity.dialog;
 
 import lombok.Data;
 
@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 @Data
-public class Dialog {
+public class Dialogs {
 
     private Long id;
     private Long createdAt;
