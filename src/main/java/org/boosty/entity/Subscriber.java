@@ -15,7 +15,7 @@ public class Subscriber {
     private String avatarUrl;
     private long onTime;
     private String status;
-    private int payments;
+    private double payments;
     private int price;
     private boolean subscribed;
 
