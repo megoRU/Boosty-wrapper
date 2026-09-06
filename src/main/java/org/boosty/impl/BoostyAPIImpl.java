@@ -46,6 +46,11 @@ public class BoostyAPIImpl implements BoostyAPI {
     }
 
     @Override
+    public List<Subscriber> getSubscribers(String blogName, int limit, long... levelIds) throws IOException, UnsuccessfulHttpException {
+        return parseResponse(SubscriberResponse.class, new SubscriberRequest(API_URL, blogName, limit, levelIds)).getData();
+    }
+
+    @Override
     public DialogsResponse dialog() throws IOException, UnsuccessfulHttpException {
        return parseResponse(DialogsResponse.class, new DialogsRequest(API_URL));
     }

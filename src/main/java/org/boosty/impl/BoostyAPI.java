@@ -31,6 +31,18 @@ public interface BoostyAPI {
     List<Subscriber> getSubscribers(String blogName, int limit) throws IOException, UnsuccessfulHttpException;
 
     /**
+     * Возвращает список подписчиков указанного блога.
+     *
+     * @param blogName название блога
+     * @param limit максимальное количество подписчиков
+     * @param levelIds id подписок
+     * @return список подписчиков
+     * @throws IOException при возникновении ошибки ввода вывода
+     * @throws UnsuccessfulHttpException если API вернуло ошибку
+     */
+    List<Subscriber> getSubscribers(String blogName, int limit, long... levelIds) throws IOException, UnsuccessfulHttpException;
+
+    /**
      * Отправляет сообщение в указанный диалог.
      *
      * @param message текст сообщения
