@@ -6,10 +6,11 @@
 ## Возможности
 
 * Получение подписчиков блога.
-* Получение времени истечения `accessToken`.
+* Получение личных чатов
+* Создание чата с подписчиком
+* Отправка сообщений в чат
 * Поддержка ротации `refreshToken`.
-* Настройка `User-Agent`.
-* Без привязки к БД или файловой системе.
+* Свои настройки `User-Agent`.
 
 ## Установка (Maven)
 
@@ -24,9 +25,9 @@
 </repositories>
 
 <dependency>
-    <groupId>com.github.megoRU</groupId>
-    <artifactId>Boosty-wrapper</artifactId>
-    <version>1.0.0</version>
+<groupId>com.github.megoRU</groupId>
+<artifactId>Boosty-wrapper</artifactId>
+<version>1.0.6</version>
 </dependency>
 ```
 
@@ -34,10 +35,13 @@
 
 Для создания `BoostyAPI` нужны:
 
-* `deviceId` — идентификатор устройства.
+Получить можно на странице `Boosty.to` через: `F12` -> `Application` -> `Storage` -> `Local storage`
+
+* `accessToken` — ключ доступа.
+* `deviceId` — идентификатор устройства. `_clientId`
 * `refreshToken` — OAuth refresh token.
 
-`accessToken`, `expiresAt` и `userAgent` — необязательные.
+`userAgent` — необязательный.
 
 ```java
 BoostyAPI boostyAPI = new BoostyAPI.Builder()
@@ -63,11 +67,11 @@ List<Subscriber> subscribers = boostyAPI.getSubscribers("blogName", 100);
 
 ```java
 if (System.currentTimeMillis() >= boostyAPI.getAccessTokenExpiresAt()) {
-    TokenPair tokens = boostyAPI.refreshTokens();
+TokenPair tokens = boostyAPI.refreshTokens();
 
-    String accessToken = tokens.getAccessToken();
-    String refreshToken = tokens.getRefreshToken();
-    long expiresAt = tokens.getExpiresAt();
+String accessToken = tokens.getAccessToken();
+String refreshToken = tokens.getRefreshToken();
+long expiresAt = tokens.getExpiresAt();
 }
 ```
 
@@ -81,13 +85,6 @@ Boosty может менять `refreshToken` при обновлении. По�
 
 Библиотека **не сохраняет токены автоматически** — это должен делать пользователь библиотеки.
 
-## Методы
+### Лицензия
 
-| Метод                             | Описание                               |
-| --------------------------------- | -------------------------------------- |
-| `getSubscribers(blogName, limit)` | Получить подписчиков блога             |
-| `refreshTokens()`                 | Обновить OAuth токены                  |
-| `getAccessToken()`                | Получить `accessToken`                 |
-| `getRefreshToken()`               | Получить `refreshToken`                |
-| `getAccessTokenExpiresAt()`       | Получить время истечения `accessToken` |
-| `getUserAgent()`                  | Получить `User-Agent`                  |
+MIT
